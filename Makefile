@@ -4,6 +4,8 @@
 
 TARGETS := undionly.kpxe snponly-x86.efi snponly-x64.efi rpi-arm32.efi rpi-arm64.efi
 
+IPXE_COMMIT != git submodule --quiet foreach git rev-parse HEAD
+
 ################################################################################
 # Default Targets
 ################################################################################
@@ -100,7 +102,7 @@ ifeq ($(GITHUB_TOKEN),)
 	@echo "Require Environment Variables: GITHUB_TOKEN"
 	@exit 1
 endif
-	@ghr -recreate -replace "v$(shell date '+%Y%m%d')" bin
+	@ghr -replace -b "[github.com/ipxe/ipxe@$(IPXE_COMMIT)](https://github.com/ipxe/ipxe/tree/$(IPXE_COMMIT))" "v$(shell date '+%Y%m%d')" bin
 
 ################################################################################
 # Clean Targets
