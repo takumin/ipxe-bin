@@ -91,6 +91,18 @@ bin/SHA512SUMS: $(TARGETS)
 	@cd bin && sha512sum $^ | tee $(subst bin/,,$@)
 
 ################################################################################
+# Release Targets
+################################################################################
+
+.PHONY: release
+release: all
+ifeq ($(GITHUB_TOKEN),)
+	@echo "Require Environment Variables: GITHUB_TOKEN"
+	@exit 1
+endif
+	@ghr -recreate -replace "v$(shell date '+%Y%m%d')" bin
+
+################################################################################
 # Clean Targets
 ################################################################################
 
