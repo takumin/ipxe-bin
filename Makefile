@@ -11,7 +11,7 @@ IPXE_COMMIT != git submodule --quiet foreach git rev-parse HEAD
 ################################################################################
 
 .PHONY: all
-all: check binaries checksums
+all: check binaries checksums licenses
 
 ################################################################################
 # Build Targets
@@ -91,6 +91,28 @@ bin/SHA256SUMS: $(TARGETS)
 SHA512SUMS: bin/SHA512SUMS
 bin/SHA512SUMS: $(TARGETS)
 	@cd bin && sha512sum $^ | tee $(subst bin/,,$@)
+
+################################################################################
+# License Targets
+################################################################################
+
+.PHONY: licenses
+licenses: COPYING COPYING.GPLv2 COPYING.UBDL
+
+.PHONY: COPYING
+COPYING: bin/COPYING
+bin/COPYING:
+	@install $(subst bin/,ipxe/,$@) $@
+
+.PHONY: COPYING.GPLv2
+COPYING.GPLv2: bin/COPYING.GPLv2
+bin/COPYING.GPLv2:
+	@install $(subst bin/,ipxe/,$@) $@
+
+.PHONY: COPYING.UBDL
+COPYING.UBDL: bin/COPYING.UBDL
+bin/COPYING.UBDL:
+	@install $(subst bin/,ipxe/,$@) $@
 
 ################################################################################
 # Release Targets
