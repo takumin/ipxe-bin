@@ -1,10 +1,26 @@
 ################################################################################
-# Variables
+# Build Targets
 ################################################################################
 
-TARGETS := ipxe-undionly.kpxe ipxe-snponly-x86.efi ipxe-snponly-x64.efi ipxe-rpi-arm32.efi ipxe-rpi-arm64.efi
+TARGETS :=
+TARGETS += ipxe-floppy.dsk
+TARGETS += ipxe-undionly.kpxe
+TARGETS += ipxe-snponly-x86.efi
+TARGETS += ipxe-snponly-x64.efi
+TARGETS += ipxe-rpi-arm32.efi
+TARGETS += ipxe-rpi-arm64.efi
 
-IPXE_COMMIT != git submodule --quiet foreach git rev-parse HEAD
+################################################################################
+# iPXE Commit Hash
+################################################################################
+
+IPXE_COMMIT := $(shell git submodule --quiet foreach git rev-parse HEAD)
+
+################################################################################
+# Release Notes
+################################################################################
+
+RELEASE_NOTES := [github.com/ipxe/ipxe@$(IPXE_COMMIT)](https://github.com/ipxe/ipxe/tree/$(IPXE_COMMIT))
 
 ################################################################################
 # Default Targets
@@ -30,40 +46,47 @@ check:
 	@arm-linux-gnueabihf-gcc -v 1>/dev/null 2>&1 || exit 1
 	@aarch64-linux-gnu-gcc -v 1>/dev/null 2>&1 || exit 1
 
+.PHONY: ipxe-floppy.dsk
+ipxe-floppy.dsk: bin/ipxe-floppy.dsk
+bin/ipxe-floppy.dsk: ipxe/src/bin/ipxe.dsk bindir
+	@install $< $@
+ipxe/src/bin/ipxe.dsk:
+	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
+
 .PHONY: ipxe-undionly.kpxe
 ipxe-undionly.kpxe: bin/ipxe-undionly.kpxe
 bin/ipxe-undionly.kpxe: ipxe/src/bin/undionly.kpxe bindir
 	@install $< $@
 ipxe/src/bin/undionly.kpxe:
-	@make -C ipxe/src -j $(nproc) $(subst ipxe/src/,,$@)
+	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snponly-x86.efi
 ipxe-snponly-x86.efi: bin/ipxe-snponly-x86.efi
 bin/ipxe-snponly-x86.efi: ipxe/src/bin-i386-efi/snponly.efi bindir
 	@install $< $@
 ipxe/src/bin-i386-efi/snponly.efi:
-	@make -C ipxe/src -j $(nproc) $(subst ipxe/src/,,$@)
+	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snponly-x64.efi
 ipxe-snponly-x64.efi: bin/ipxe-snponly-x64.efi
 bin/ipxe-snponly-x64.efi: ipxe/src/bin-x86_64-efi/snponly.efi bindir
 	@install $< $@
 ipxe/src/bin-x86_64-efi/snponly.efi:
-	@make -C ipxe/src -j $(nproc) $(subst ipxe/src/,,$@)
+	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-rpi-arm32.efi
 ipxe-rpi-arm32.efi: bin/ipxe-rpi-arm32.efi
 bin/ipxe-rpi-arm32.efi: ipxe/src/bin-arm32-efi/rpi.efi bindir
 	@install $< $@
 ipxe/src/bin-arm32-efi/rpi.efi:
-	@make -C ipxe/src -j $(nproc) CONFIG=rpi CROSS=arm-linux-gnueabihf- $(subst ipxe/src/,,$@)
+	@make -C ipxe/src -j $(shell nproc) CONFIG=rpi CROSS=arm-linux-gnueabihf- $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-rpi-arm64.efi
 ipxe-rpi-arm64.efi: bin/ipxe-rpi-arm64.efi
 bin/ipxe-rpi-arm64.efi: ipxe/src/bin-arm64-efi/rpi.efi bindir
 	@install $< $@
 ipxe/src/bin-arm64-efi/rpi.efi:
-	@make -C ipxe/src -j $(nproc) CONFIG=rpi CROSS=aarch64-linux-gnu- $(subst ipxe/src/,,$@)
+	@make -C ipxe/src -j $(shell nproc) CONFIG=rpi CROSS=aarch64-linux-gnu- $(subst ipxe/src/,,$@)
 
 ################################################################################
 # Checksum Targets
@@ -120,11 +143,8 @@ bin/COPYING.UBDL:
 
 .PHONY: release
 release: all
-ifeq ($(GITHUB_TOKEN),)
-	@echo "Require Environment Variables: GITHUB_TOKEN"
-	@exit 1
-endif
-	@ghr -replace -b "[github.com/ipxe/ipxe@$(IPXE_COMMIT)](https://github.com/ipxe/ipxe/tree/$(IPXE_COMMIT))" "v$(shell date '+%Y%m%d')" bin
+	@gh auth status 1>/dev/null 2>&1 || exit 1
+	@gh release create "v$(shell date '+%Y%m%d')" -n "$(RELEASE_NOTES)" $(wildcard bin/*)
 
 ################################################################################
 # Clean Targets
