@@ -46,46 +46,75 @@ check:
 	@arm-linux-gnueabihf-gcc -v 1>/dev/null 2>&1 || exit 1
 	@aarch64-linux-gnu-gcc -v 1>/dev/null 2>&1 || exit 1
 
+.PHONY: ipxe-config-local-general.h
+ipxe-config-local-general.h: ipxe/src/config/local/general.h
+ipxe/src/config/local/general.h:
+	@{ \
+		echo '/* Disabled Boot Wait */'; \
+		echo '#undef BANNER_TIMEOUT'; \
+		echo '#define BANNER_TIMEOUT 0'; \
+		echo ''; \
+		echo '/* Available Commands */'; \
+		echo '#define NSLOOKUP_CMD /* DNS Resolving Command */'; \
+		echo '#define NTP_CMD      /* NTP Command */'; \
+		echo '#define PING_CMD     /* Ping Command */'; \
+		echo '#define REBOOT_CMD   /* Reboot Command */'; \
+		echo '#define POWEROFF_CMD /* Power Off Command */'; \
+	} > $@
+
+.PHONY: ipxe-config-local-nap.h
+ipxe-config-local-nap.h: ipxe/src/config/local/nap.h
+ipxe/src/config/local/nap.h:
+	@{ \
+		echo '/* Disabled CPU Sleeping */'; \
+		echo '/* Hardware Measures Missing Interrupt Support */'; \
+		echo '/* See also: https://u-boot.readthedocs.io/en/latest/develop/uefi/iscsi.html */'; \
+		echo '#undef NAP_PCBIOS'; \
+		echo '#undef NAP_EFIX86'; \
+		echo '#undef NAP_EFIARM'; \
+		echo '#define NAP_NULL'; \
+	} > $@
+
 .PHONY: ipxe-floppy.dsk
 ipxe-floppy.dsk: bin/ipxe-floppy.dsk
 bin/ipxe-floppy.dsk: ipxe/src/bin/ipxe.dsk bindir
 	@install $< $@
-ipxe/src/bin/ipxe.dsk:
+ipxe/src/bin/ipxe.dsk: ipxe-config-local-general.h ipxe-config-local-nap.h
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-undionly.kpxe
 ipxe-undionly.kpxe: bin/ipxe-undionly.kpxe
 bin/ipxe-undionly.kpxe: ipxe/src/bin/undionly.kpxe bindir
 	@install $< $@
-ipxe/src/bin/undionly.kpxe:
+ipxe/src/bin/undionly.kpxe: ipxe-config-local-general.h ipxe-config-local-nap.h
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snponly-x86.efi
 ipxe-snponly-x86.efi: bin/ipxe-snponly-x86.efi
 bin/ipxe-snponly-x86.efi: ipxe/src/bin-i386-efi/snponly.efi bindir
 	@install $< $@
-ipxe/src/bin-i386-efi/snponly.efi:
+ipxe/src/bin-i386-efi/snponly.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snponly-x64.efi
 ipxe-snponly-x64.efi: bin/ipxe-snponly-x64.efi
 bin/ipxe-snponly-x64.efi: ipxe/src/bin-x86_64-efi/snponly.efi bindir
 	@install $< $@
-ipxe/src/bin-x86_64-efi/snponly.efi:
+ipxe/src/bin-x86_64-efi/snponly.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-rpi-arm32.efi
 ipxe-rpi-arm32.efi: bin/ipxe-rpi-arm32.efi
-bin/ipxe-rpi-arm32.efi: ipxe/src/bin-arm32-efi/rpi.efi bindir
+bin/ipxe-rpi-arm32.efi: ipxe/src/bin-arm32-efi/snp.efi bindir
 	@install $< $@
-ipxe/src/bin-arm32-efi/rpi.efi:
+ipxe/src/bin-arm32-efi/snp.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
 	@make -C ipxe/src -j $(shell nproc) CONFIG=rpi CROSS=arm-linux-gnueabihf- $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-rpi-arm64.efi
 ipxe-rpi-arm64.efi: bin/ipxe-rpi-arm64.efi
-bin/ipxe-rpi-arm64.efi: ipxe/src/bin-arm64-efi/rpi.efi bindir
+bin/ipxe-rpi-arm64.efi: ipxe/src/bin-arm64-efi/snp.efi bindir
 	@install $< $@
-ipxe/src/bin-arm64-efi/rpi.efi:
+ipxe/src/bin-arm64-efi/snp.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
 	@make -C ipxe/src -j $(shell nproc) CONFIG=rpi CROSS=aarch64-linux-gnu- $(subst ipxe/src/,,$@)
 
 ################################################################################
