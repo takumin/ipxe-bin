@@ -7,8 +7,8 @@ TARGETS += ipxe-floppy.dsk
 TARGETS += ipxe-undionly.kpxe
 TARGETS += ipxe-snponly-x86.efi
 TARGETS += ipxe-snponly-x64.efi
-TARGETS += ipxe-rpi-arm32.efi
-TARGETS += ipxe-rpi-arm64.efi
+TARGETS += ipxe-snp-arm32.efi
+TARGETS += ipxe-snp-arm64.efi
 
 ################################################################################
 # iPXE Commit Hash
@@ -103,19 +103,19 @@ bin/ipxe-snponly-x64.efi: ipxe/src/bin-x86_64-efi/snponly.efi bindir
 ipxe/src/bin-x86_64-efi/snponly.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
-.PHONY: ipxe-rpi-arm32.efi
-ipxe-rpi-arm32.efi: bin/ipxe-rpi-arm32.efi
-bin/ipxe-rpi-arm32.efi: ipxe/src/bin-arm32-efi/snp.efi bindir
+.PHONY: ipxe-snp-arm32.efi
+ipxe-snp-arm32.efi: bin/ipxe-snp-arm32.efi
+bin/ipxe-snp-arm32.efi: ipxe/src/bin-arm32-efi/snp.efi bindir
 	@install $< $@
 ipxe/src/bin-arm32-efi/snp.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
-	@make -C ipxe/src -j $(shell nproc) CONFIG=rpi CROSS=arm-linux-gnueabihf- $(subst ipxe/src/,,$@)
+	@make -C ipxe/src -j $(shell nproc) CROSS=arm-linux-gnueabihf- $(subst ipxe/src/,,$@)
 
-.PHONY: ipxe-rpi-arm64.efi
-ipxe-rpi-arm64.efi: bin/ipxe-rpi-arm64.efi
-bin/ipxe-rpi-arm64.efi: ipxe/src/bin-arm64-efi/snp.efi bindir
+.PHONY: ipxe-snp-arm64.efi
+ipxe-snp-arm64.efi: bin/ipxe-snp-arm64.efi
+bin/ipxe-snp-arm64.efi: ipxe/src/bin-arm64-efi/snp.efi bindir
 	@install $< $@
 ipxe/src/bin-arm64-efi/snp.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
-	@make -C ipxe/src -j $(shell nproc) CONFIG=rpi CROSS=aarch64-linux-gnu- $(subst ipxe/src/,,$@)
+	@make -C ipxe/src -j $(shell nproc) CROSS=aarch64-linux-gnu- $(subst ipxe/src/,,$@)
 
 ################################################################################
 # Checksum Targets
