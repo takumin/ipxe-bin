@@ -11,6 +11,15 @@ TARGETS += ipxe-snp-arm32.efi
 TARGETS += ipxe-snp-arm64.efi
 
 ################################################################################
+# Config Targets
+################################################################################
+
+CONFIGS :=
+CONFIGS += ipxe-config-local-general.h
+# TODO: Enable when SBC cannot control interrupts
+# CONFIGS += ipxe-config-local-nap.h
+
+################################################################################
 # iPXE Commit Hash
 ################################################################################
 
@@ -46,6 +55,9 @@ check:
 	@arm-linux-gnueabihf-gcc -v 1>/dev/null 2>&1 || exit 1
 	@aarch64-linux-gnu-gcc -v 1>/dev/null 2>&1 || exit 1
 
+.PHONY: config
+config: $(CONFIGS)
+
 .PHONY: ipxe-config-local-general.h
 ipxe-config-local-general.h: ipxe/src/config/local/general.h
 ipxe/src/config/local/general.h:
@@ -79,42 +91,42 @@ ipxe/src/config/local/nap.h:
 ipxe-floppy.dsk: bin/ipxe-floppy.dsk
 bin/ipxe-floppy.dsk: ipxe/src/bin/ipxe.dsk bindir
 	@install $< $@
-ipxe/src/bin/ipxe.dsk: ipxe-config-local-general.h ipxe-config-local-nap.h
+ipxe/src/bin/ipxe.dsk: config
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-undionly.kpxe
 ipxe-undionly.kpxe: bin/ipxe-undionly.kpxe
 bin/ipxe-undionly.kpxe: ipxe/src/bin/undionly.kpxe bindir
 	@install $< $@
-ipxe/src/bin/undionly.kpxe: ipxe-config-local-general.h ipxe-config-local-nap.h
+ipxe/src/bin/undionly.kpxe: config
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snponly-x86.efi
 ipxe-snponly-x86.efi: bin/ipxe-snponly-x86.efi
 bin/ipxe-snponly-x86.efi: ipxe/src/bin-i386-efi/snponly.efi bindir
 	@install $< $@
-ipxe/src/bin-i386-efi/snponly.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
+ipxe/src/bin-i386-efi/snponly.efi: config
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snponly-x64.efi
 ipxe-snponly-x64.efi: bin/ipxe-snponly-x64.efi
 bin/ipxe-snponly-x64.efi: ipxe/src/bin-x86_64-efi/snponly.efi bindir
 	@install $< $@
-ipxe/src/bin-x86_64-efi/snponly.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
+ipxe/src/bin-x86_64-efi/snponly.efi: config
 	@make -C ipxe/src -j $(shell nproc) $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snp-arm32.efi
 ipxe-snp-arm32.efi: bin/ipxe-snp-arm32.efi
 bin/ipxe-snp-arm32.efi: ipxe/src/bin-arm32-efi/snp.efi bindir
 	@install $< $@
-ipxe/src/bin-arm32-efi/snp.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
+ipxe/src/bin-arm32-efi/snp.efi: config
 	@make -C ipxe/src -j $(shell nproc) CROSS=arm-linux-gnueabihf- $(subst ipxe/src/,,$@)
 
 .PHONY: ipxe-snp-arm64.efi
 ipxe-snp-arm64.efi: bin/ipxe-snp-arm64.efi
 bin/ipxe-snp-arm64.efi: ipxe/src/bin-arm64-efi/snp.efi bindir
 	@install $< $@
-ipxe/src/bin-arm64-efi/snp.efi: ipxe-config-local-general.h ipxe-config-local-nap.h
+ipxe/src/bin-arm64-efi/snp.efi: config
 	@make -C ipxe/src -j $(shell nproc) CROSS=aarch64-linux-gnu- $(subst ipxe/src/,,$@)
 
 ################################################################################
